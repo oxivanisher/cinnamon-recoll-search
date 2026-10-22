@@ -32,9 +32,21 @@ the app results:
 - **icon**: the file type icon with a small magnifier badge
 - **Enter / click**: opens the file with its default app; hits inside an
   archive open the archive
-- **Right-click / Menu key / Ctrl+Enter**: context menu with *Open*,
-  *Open containing folder* (opens the folder in the file manager with the
-  file selected) and *Copy path*
+- **Right-click / Menu key / Ctrl+Enter**: context menu with
+  - *Open*: with the default app, like a click
+  - *Edit as text*: for text-based files (HTML, SVG, scripts, ...) whose
+    default app is not your text editor; opens them in the default app
+    for plain text files
+  - *Open with ...*: up to 4 other apps for the file type, as in the file
+    manager's "Open With"
+  - *Open containing folder*: opens the folder in the file manager with
+    the file selected
+  - *Copy path*
+
+  These follow your desktop's file associations (Nemo: right-click → Open
+  With; System Settings → Preferred Applications). The desktop has no
+  separate "edit" action per file type, so editing a picture or PDF means
+  picking an editor (GIMP, Inkscape, ...) under *Open with*.
 
 Several words must all match (each by content or by file name). Words are
 matched as prefixes ("inv" finds "invoice"). Very short prefixes can match

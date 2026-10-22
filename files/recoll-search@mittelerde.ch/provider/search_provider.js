@@ -21,6 +21,7 @@ const PopupMenu = imports.ui.popupMenu;
 
 const DEBOUNCE_MS = 150;     // wait this long after the last keystroke
 const TIMEOUT_MS = 3000;     // give up on a query after this long
+const MAX_OPEN_WITH = 4;     // "Open with <app>" entries in the context menu
 
 // The settings are edited in the extension's settings dialog and saved by
 // Cinnamon to this file. Only one settings object may be registered per
@@ -306,28 +307,85 @@ function setUpButton(result) {
     });
 }
 
+// Open, Edit as text, Open with <app>..., Open containing folder, Copy path.
+//
+// The desktop (freedesktop.org MIME associations) has no separate "edit"
+// action, only a default app per file type and a list of other apps for
+// it. So editing means: one of those other apps (Nemo's "Open With"), and
+// for text-based files that open elsewhere by default (HTML in a browser),
+// the default text editor, i.e. the default app for text/plain.
 function populateContextMenu(button, menu) {
     let result = button.result;
+    // For hits inside archives/mailboxes this is the container, like for Open.
+    let file = Gio.File.new_for_path(result.path);
+    let type = contentType(file);
+    let defaultApp = type ? Gio.AppInfo.get_default_for_type(type, false) : null;
+    let isDefault = app => defaultApp !== null && app.equal(defaultApp);
+
     menu.addMenuItem(new ContextMenuItem(button, "Open",
         "xsi-x-office-document-symbolic", () => openUri(result.url)));
+
+    let editor = null;
+    if (type && Gio.content_type_is_a(type, "text/plain")) {
+        editor = Gio.AppInfo.get_default_for_type("text/plain", false);
+        if (editor && isDefault(editor))
+            editor = null;   // Open already uses it
+    }
+    if (editor) {
+        menu.addMenuItem(new ContextMenuItem(button, "Edit as text",
+            "xsi-document-edit-symbolic", () => launchApp(editor, file)));
+    }
+
+    let others = type ? Gio.AppInfo.get_recommended_for_type(type) : [];
+    others = others
+        .filter(app => !isDefault(app) && !(editor && app.equal(editor)))
+        .slice(0, MAX_OPEN_WITH);
+    for (let app of others) {
+        menu.addMenuItem(new ContextMenuItem(button, `Open with ${app.get_name()}`,
+            app.get_icon(), () => launchApp(app, file)));
+    }
+
     menu.addMenuItem(new ContextMenuItem(button, "Open containing folder",
         "xsi-folder-open-symbolic", () => showInFolder(result)));
     menu.addMenuItem(new ContextMenuItem(button, "Copy path",
         "xsi-edit-copy-symbolic", () => copyPath(result)));
 }
 
+// The type the desktop uses for the file (may differ from Recoll's mtype).
+function contentType(file) {
+    try {
+        return file.query_info("standard::content-type", Gio.FileQueryInfoFlags.NONE, null)
+            .get_content_type();
+    } catch (e) {
+        return null;
+    }
+}
+
+function launchApp(app, file) {
+    try {
+        app.launch([file], global.create_app_launch_context());
+    } catch (e) {
+        global.logError(`[recoll-search] could not start ${app.get_name()}: ${e.message}`);
+    }
+}
+
 // Looks like the menu's own context menu items (ApplicationContextMenuItem).
+// icon is a symbolic icon name, or an app's GIcon (shown in color).
 class ContextMenuItem extends PopupMenu.PopupBaseMenuItem {
-    constructor(button, label, iconName, action) {
+    constructor(button, label, icon, action) {
         super({ focusOnHover: false });
         this._button = button;
         this._action = action;
 
-        this.addActor(new St.Icon({
-            icon_name: iconName,
-            icon_size: 12,
-            icon_type: St.IconType.SYMBOLIC,
-        }));
+        if (typeof icon === "string") {
+            this.addActor(new St.Icon({
+                icon_name: icon,
+                icon_size: 12,
+                icon_type: St.IconType.SYMBOLIC,
+            }));
+        } else if (icon) {
+            this.addActor(new St.Icon({ gicon: icon, icon_size: 12 }));
+        }
         let labelActor = new St.Label({ text: label });
         this.addActor(labelActor);
         this.actor.set_label_actor(labelActor);
