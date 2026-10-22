@@ -132,6 +132,11 @@ recollq -C -n 15 'invoice* OR filename:invoice*'
 - Only menus that use Cinnamon's search providers show results (the stock
   menu does).
 
+## About
+
+This extension was made with the help of [Claude Code](https://claude.com/claude-code).
+I reviewed and tested the code myself.
+
 ## License
 
 GPL-2.0-or-later, see [LICENSE](LICENSE).
