@@ -94,9 +94,11 @@ installed from Spices and have no settings UI, so this extension wraps one:
 
 ## Troubleshooting
 
-If Recoll is not installed, or its index can't be opened, the extension
-shows a notification a few seconds after it is enabled (at most once per
-session). After installing Recoll, results appear without a restart.
+If Recoll is not installed, the extension shows a notification a few
+seconds after it is enabled. If Recoll can't open its index (e.g. none was
+created yet), a notification appears on the first search. Each at most
+once per session. After installing Recoll and creating the index, results
+appear without a restart.
 
 Open Looking Glass (Alt+F2, type `lg`, Enter) and check the *Log* tab for
 lines starting with `[recoll-search]`, or errors mentioning

@@ -15,8 +15,8 @@
 // The settings belong to this extension; the provider reads the saved
 // settings file (see provider/search_provider.js).
 //
-// A few seconds after enable() it also checks that Recoll is usable, and
-// shows a notification if not, since the menu would just show no files.
+// A few seconds after enable() it also checks that Recoll is installed,
+// and shows a notification if not, since the menu would just show no files.
 
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
@@ -117,14 +117,6 @@ function setProviderEnabled(enabled) {
 
 // ---- Recoll check ---------------------------------------------------------
 
-function confdirArgs() {
-    // The file chooser saves a URI; accept plain paths as well.
-    let dir = _settings.getValue("recoll-confdir") || "";
-    if (dir.startsWith("file://"))
-        dir = Gio.File.new_for_uri(dir).get_path() || "";
-    return dir ? ["-c", dir] : [];
-}
-
 function warn(details) {
     _warned = true;
     let icon = new St.Icon({
@@ -136,30 +128,12 @@ function warn(details) {
     Main.warningNotify(_meta.name, details, icon);
 }
 
+// A missing index is reported by the provider when a search fails, which
+// also covers Recoll being installed after this extension was enabled.
 function checkRecoll() {
-    let recollq = GLib.find_program_in_path("recollq");
-    if (!recollq) {
+    if (!GLib.find_program_in_path("recollq")) {
         warn("Recoll is not installed, so the menu shows no files. " +
              "Install it, e.g. with: sudo apt install recoll");
-        return;
-    }
-
-    // A query for a plain word only fails if the index can't be opened.
-    let argv = [recollq, ...confdirArgs(), "-n", "1", "recollsearchcheck"];
-    try {
-        let proc = Gio.Subprocess.new(argv,
-            Gio.SubprocessFlags.STDOUT_SILENCE | Gio.SubprocessFlags.STDERR_SILENCE);
-        proc.wait_check_async(null, (p, res) => {
-            try {
-                p.wait_check_finish(res);
-            } catch (e) {
-                if (_settings)   // still enabled
-                    warn("Recoll could not open its index, so the menu shows no files. " +
-                         "Open Recoll once, or run 'recollindex', to create the index.");
-            }
-        });
-    } catch (e) {
-        logError(`could not run recollq: ${e.message}`);
     }
 }
 

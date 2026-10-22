@@ -15,6 +15,7 @@ const GLib = imports.gi.GLib;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const St = imports.gi.St;
+const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 
 // ---- Configuration --------------------------------------------------------
@@ -55,6 +56,7 @@ let _debounceId = 0;
 let _timeoutId = 0;
 const _programs = {};        // name -> path, once found
 const _missing = new Set();  // programs already reported as missing
+let _indexWarned = false;    // warn about a missing index once per session
 const _decoder = new TextDecoder();
 
 // ---- Settings -------------------------------------------------------------
@@ -458,6 +460,38 @@ function openRecoll(query) {
     }
 }
 
+// ---- Missing index --------------------------------------------------------
+
+// A query for plain words only fails if Recoll can't open its index, e.g.
+// because none was created yet (Recoll was just installed). The menu would
+// just show no files, so tell the user, once per session.
+function warnNoIndex() {
+    if (_indexWarned)
+        return;
+    _indexWarned = true;
+    global.logError("[recoll-search] recollq failed; no Recoll index?");
+    Main.warningNotify("Recoll file search",
+        "Recoll could not open its index, so the menu shows no files. " +
+        "Open Recoll once, or run 'recollindex', to create the index.",
+        new St.Icon({ gicon: extensionIcon(), icon_size: 48 }));
+}
+
+// __dirname is this folder as Cinnamon loaded it: the symlink in
+// search_providers/. The extension's icon is next to the link's target.
+function extensionIcon() {
+    let dir = Gio.File.new_for_path(__dirname);
+    try {
+        let target = dir.query_info("standard::symlink-target",
+                                    Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null)
+            .get_symlink_target();
+        if (target)
+            dir = Gio.File.new_for_path(target);
+    } catch (e) {
+        // Not a symlink: use the folder as it is.
+    }
+    return new Gio.FileIcon({ file: dir.get_parent().get_child("icon.png") });
+}
+
 // ---- Process handling -----------------------------------------------------
 
 // Look up a program. A missing one is looked up again next time, so that
@@ -552,6 +586,8 @@ function runQuery(text, queries, generation, send) {
         if (!p.get_successful()) {
             if (queries.length > 1)
                 runQuery(text, queries.slice(1), generation, send);
+            else
+                warnNoIndex();   // even the query for plain words failed
             return;
         }
 
