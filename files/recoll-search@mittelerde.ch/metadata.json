@@ -1,0 +1,8 @@
+{
+    "uuid": "recoll-search@mittelerde.ch",
+    "name": "Recoll file search",
+    "description": "Shows files from your Recoll index (by name and content) in the Cinnamon menu search.",
+    "version": "0.2.0",
+    "cinnamon-version": ["6.0"],
+    "url": "https://github.com/oxivanisher/cinnamon-recoll-search"
+}

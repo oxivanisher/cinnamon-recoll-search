@@ -1,0 +1,6 @@
+{
+    "uuid": "recoll-search-provider@mittelerde.ch",
+    "name": "Recoll file search (provider)",
+    "description": "Search provider part of the 'Recoll file search' extension. Installed and enabled by that extension.",
+    "version": "0.2.0"
+}

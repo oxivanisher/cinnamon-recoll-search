@@ -1,0 +1,65 @@
+{
+    "section-results": {
+        "type": "section",
+        "description": "Results"
+    },
+    "max-results": {
+        "type": "spinbutton",
+        "default": 15,
+        "min": 1,
+        "max": 100,
+        "step": 1,
+        "units": "files",
+        "description": "Maximum number of file results"
+    },
+    "min-chars": {
+        "type": "spinbutton",
+        "default": 3,
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "units": "characters",
+        "description": "Start searching after",
+        "tooltip": "Shorter input is not searched."
+    },
+    "show-embedded": {
+        "type": "switch",
+        "default": true,
+        "description": "Show hits inside archives and mailboxes",
+        "tooltip": "Selecting such a hit opens the archive or mailbox that contains it."
+    },
+    "icon-size": {
+        "type": "spinbutton",
+        "default": 32,
+        "min": 16,
+        "max": 64,
+        "step": 1,
+        "units": "px",
+        "description": "Icon size",
+        "tooltip": "Set this to the menu's \"Application icon size\"."
+    },
+    "show-badge": {
+        "type": "switch",
+        "default": true,
+        "description": "Mark file results with a search badge",
+        "tooltip": "Shows a small magnifier on the file icons, to tell file results apart from apps."
+    },
+    "show-recoll-row": {
+        "type": "switch",
+        "default": false,
+        "description": "Show a \"Search in Recoll\" row above the file results",
+        "tooltip": "Opens the Recoll window with the same search. Needs the 'recoll' package. If no app matches, the menu selects this row first, so Enter opens Recoll instead of the first file."
+    },
+    "section-recoll": {
+        "type": "section",
+        "description": "Recoll"
+    },
+    "recoll-confdir": {
+        "type": "filechooser",
+        "select-dir": true,
+        "allow-none": true,
+        "default": "",
+        "description": "Recoll configuration folder",
+        "tooltip": "Leave empty to use the default (~/.recoll, or $RECOLL_CONFDIR)."
+    }
+}
