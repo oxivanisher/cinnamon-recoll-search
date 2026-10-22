@@ -476,10 +476,12 @@ function warnNoIndex() {
         new St.Icon({ gicon: extensionIcon(), icon_size: 48 }));
 }
 
-// __dirname is this folder as Cinnamon loaded it: the symlink in
-// search_providers/. The extension's icon is next to the link's target.
+// The extension symlinks this folder into search_providers/ (see
+// ../extension.js); its icon is next to the link's target. (Not using
+// __dirname: Cinnamon's newer module loader no longer provides it.)
 function extensionIcon() {
-    let dir = Gio.File.new_for_path(__dirname);
+    let dir = Gio.File.new_for_path(GLib.build_filenamev(
+        [global.userdatadir, "search_providers", "recoll-search-provider@mittelerde.ch"]));
     try {
         let target = dir.query_info("standard::symlink-target",
                                     Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null)
