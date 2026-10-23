@@ -37,6 +37,7 @@ const DEFAULTS = {
     "max-results": 15,       // results shown in the menu
     "min-chars": 3,          // don't search for shorter input
     "show-embedded": true,   // show hits inside archives / mailboxes
+    "sort-order": "path",    // "relevance", "mtime" (newest first) or "path"
     "icon-size": 32,         // should match the menu's "application icon size"
     "show-badge": true,      // mark file icons with a small search badge
     "show-recoll-row": false, // add a "Search ... in Recoll" row above the files
@@ -148,6 +149,12 @@ function buildArgv(query) {
     // -C  collapse duplicates
     // -n  number of results (fetch a few extra, some may be filtered out)
     // -F  one line per result, fields base64-encoded and space-separated
+    // -S mtime -D  newest first, instead of by relevance. Recoll sorts all
+    //     matches before cutting them to -n, so this shows the newest
+    //     matches, not the best ones. For "path", the best matches are
+    //     fetched by relevance and sorted by parseOutput instead.
+    if (_config["sort-order"] === "mtime")
+        argv.push("-S", "mtime", "-D");
     argv.push("-C", "-n", String(_config["max-results"] * 2),
               "-F", "url mtype ipath filename title",
               query);
@@ -223,6 +230,12 @@ function parseOutput(stdout) {
 
         if (results.length >= _config["max-results"])
             break;
+    }
+
+    if (_config["sort-order"] === "path") {
+        let collator = new Intl.Collator(undefined, {numeric: true, sensitivity: "base"});
+        results.sort((a, b) => collator.compare(a.path, b.path) ||
+                               collator.compare(a.label, b.label));
     }
     return results;
 }

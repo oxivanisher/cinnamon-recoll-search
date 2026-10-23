@@ -28,6 +28,17 @@
         "description": "Show hits inside archives and mailboxes",
         "tooltip": "Selecting such a hit opens the archive or mailbox that contains it."
     },
+    "sort-order": {
+        "type": "combobox",
+        "default": "path",
+        "options": {
+            "Best match first": "relevance",
+            "Newest first": "mtime",
+            "Best matches, sorted by path": "path"
+        },
+        "description": "Order of the file results",
+        "tooltip": "\"Newest first\" shows the newest matching files, which may not be the best matches. \"Best matches, sorted by path\" shows the same files as \"Best match first\", sorted by folder and name."
+    },
     "icon-size": {
         "type": "spinbutton",
         "default": 32,

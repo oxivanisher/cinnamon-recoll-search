@@ -67,6 +67,7 @@ System Settings → Extensions → Recoll file search → settings:
 | Maximum number of file results          | 15      | file results shown                             |
 | Start searching after                   | 3       | shorter input is not searched                  |
 | Show hits inside archives and mailboxes | on      | include zip members, mails in mbox files, ...  |
+| Order of the file results               | Best matches, sorted by path | *Best match first*: Recoll's relevance ranking; *Newest first*: the newest matching files (Recoll sorts all matches, so these may not be the best ones); *Best matches, sorted by path*: the same files as *Best match first*, sorted by folder and name |
 | Icon size                               | 32      | match the menu's "Application icon size"       |
 | Mark file results with a search badge   | on      | small magnifier on file icons, to tell them apart from apps |
 | Show a "Search in Recoll" row           | off     | extra row above the files that opens the Recoll window with the same search (needs the `recoll` package) |
