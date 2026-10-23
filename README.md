@@ -54,6 +54,10 @@ more words than Recoll allows (`maxTermExpand`, 10000 by default); then the
 search falls back to whole words for the content, and if needed to whole
 words only.
 
+Start the search with `d:` to find only folders, or with `f:` to find only
+files: `d: documents`, `f:invoice 2024`. The 3 characters needed to start a
+search don't include the prefix.
+
 ## Settings
 
 System Settings → Extensions → Recoll file search → settings:

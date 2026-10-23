@@ -113,7 +113,9 @@ function confdirPath() {
 // wildcards: first prefixes everywhere, then whole words for the content
 // (still stemmed: "invoice" finds "invoices") and prefixes for file names
 // (these expand to far fewer terms), then whole words only.
-function buildQueries(pattern) {
+//
+// kind limits the results to folders ("d") or files ("f"), see splitKind.
+function buildQueries(pattern, kind) {
     // Keep letters, digits and a few safe characters; everything else
     // (quotes, colons, parentheses, wildcards...) is query syntax.
     // Lowercase so words like "OR"/"AND" are never read as operators.
@@ -125,8 +127,17 @@ function buildQueries(pattern) {
     if (words.length === 0)
         return [];
 
+    // Recoll indexes folders by name, with MIME type inode/directory.
+    let filter = {d: " mime:inode/directory", f: " -mime:inode/directory"}[kind] || "";
     return [["*", "*"], ["", "*"], ["", ""]].map(([content, filename]) =>
-        words.map(w => `${w}${content} OR filename:${w}${filename}`).join(" "));
+        words.map(w => `${w}${content} OR filename:${w}${filename}`).join(" ") + filter);
+}
+
+// Splits a leading "d:" (folders only) or "f:" (files only) off the input:
+// "d: documents" -> ["d", "documents"].
+function splitKind(text) {
+    let m = text.match(/^([df]):\s*(.*)$/i);
+    return m ? [m[1].toLowerCase(), m[2]] : ["", text];
 }
 
 function buildArgv(query) {
@@ -621,10 +632,11 @@ function perform_search(pattern) {
     loadConfig();
 
     let text = (pattern || "").trim();
-    if (text.length < _config["min-chars"] || !findProgram("recollq"))
+    let [kind, words] = splitKind(text);
+    if (words.length < _config["min-chars"] || !findProgram("recollq"))
         return;
 
-    let queries = buildQueries(text);
+    let queries = buildQueries(words, kind);
     if (queries.length === 0)
         return;
 
